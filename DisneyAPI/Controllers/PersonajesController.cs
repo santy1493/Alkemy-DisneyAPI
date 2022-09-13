@@ -80,7 +80,7 @@ namespace DisneyAPI.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> Put(int id, PersonajePostDTO personajeDTO)
         {
-            var personaje = await context.Personajes.FirstOrDefaultAsync(p => p.Id == id);
+            var personaje = await context.Personajes.Include("Peliculas").Where(p => p.Id == id).FirstOrDefaultAsync(p => p.Id == id);
 
             if(personaje == null)
             {
@@ -100,7 +100,6 @@ namespace DisneyAPI.Controllers
             personaje.Edad = personajeDTO.Edad;
             personaje.Peso = personajeDTO.Peso;
             personaje.Historia = personajeDTO.Historia;
-            personaje.Peliculas.Clear();
             personaje.Peliculas = peliculas;
 
             context.Update(personaje);

@@ -1,5 +1,7 @@
 ﻿using DisneyAPI.Data;
 using DisneyAPI.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +13,7 @@ namespace DisneyAPI.Controllers
 {
     [Route("api/movies")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class PeliculasController : ControllerBase
     {
         private readonly ApplicationDbContext context;
