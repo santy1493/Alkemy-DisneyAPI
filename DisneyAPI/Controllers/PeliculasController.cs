@@ -13,7 +13,7 @@ namespace DisneyAPI.Controllers
 {
     [Route("api/movies")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class PeliculasController : ControllerBase
     {
         private readonly ApplicationDbContext context;
@@ -24,10 +24,36 @@ namespace DisneyAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<PeliculaGetDTO>>> GetPeliculas()
+        public async Task<ActionResult<List<PeliculaGetDTO>>> GetPeliculas([FromQuery] string name, [FromQuery] int genre, [FromQuery] string order)
         {
             List<PeliculaGetDTO> peliculasDTO = new List<PeliculaGetDTO>();
+
             var peliculas = await context.Peliculas.Include("Personajes").ToListAsync();
+
+            if (genre != 0)
+            {
+                var genero = await context.Generos.Include("Peliculas").FirstOrDefaultAsync(c => c.Id == genre);
+                if (genero != null)
+                    peliculas = genero.Peliculas.ToList();
+                else
+                    peliculas = new List<Pelicula>();
+            }
+            if (name != null)
+            {
+                peliculas.RemoveAll(p => p.Titulo != name);
+            }
+            if (order != null)
+            {
+                if(order.ToLower() == "asc")
+                {
+                    peliculas = peliculas.OrderBy(p => p.Titulo).ToList();
+                }
+                else if(order.ToLower() == "desc")
+                {
+                    peliculas = peliculas.OrderByDescending(p => p.Titulo).ToList();
+                }
+                
+            }
 
             foreach (Pelicula pelicula in peliculas)
             {

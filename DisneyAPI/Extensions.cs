@@ -90,5 +90,18 @@ namespace DisneyAPI
 
             return peliculaDTO;
         }
+        
+        public static GeneroGetDTO AsGetDTO(this Genero genero)
+        {
+            GeneroGetDTO generoDTO = new GeneroGetDTO()
+            {
+                Id = genero.Id,
+                Imagen = genero.Imagen,
+                Nombre = genero.Nombre,
+                Peliculas = genero.Peliculas.RemoverListaPersonajes()
+            };
+
+            return generoDTO;
+        }
     }
 }

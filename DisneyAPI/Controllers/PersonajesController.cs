@@ -21,10 +21,23 @@ namespace DisneyAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<PersonajeGetDTO>>> GetPersonajes()
+        public async Task<ActionResult<List<PersonajeGetDTO>>> GetPersonajes([FromQuery] string name, [FromQuery] int age, [FromQuery] int movie)
         {
             List<PersonajeGetDTO> personajesDTO = new List<PersonajeGetDTO>();
             var personajes = await context.Personajes.Include("Peliculas").ToListAsync();
+
+            if(name != null)
+            {
+                personajes.RemoveAll(p => p.Nombre.ToLower() != name.ToLower());
+            }
+            if(age != 0)
+            {
+                personajes.RemoveAll(p => p.Edad != age);
+            }
+            if(movie != 0)
+            {
+                personajes.RemoveAll(p => !p.Peliculas.Any(x => x.Id == movie));
+            }
 
             foreach (Personaje personaje in personajes)
             {
