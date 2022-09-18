@@ -1,10 +1,12 @@
 ﻿using DisneyAPI.Data;
 using DisneyAPI.Models;
+using DisneyAPI.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,111 +18,107 @@ namespace DisneyAPI.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class GenerosController : ControllerBase
     {
-        private readonly ApplicationDbContext context;
+        private readonly IGeneroRepository repository;
 
-        public GenerosController(ApplicationDbContext context)
+        public GenerosController(IGeneroRepository repository)
         {
-            this.context = context;
+            this.repository = repository;
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<GeneroGetDTO>>> GetGeneros()
+        public async Task<ActionResult<GeneroGetDTO>> GetGeneros()
         {
-            List<GeneroGetDTO> generosDTO = new List<GeneroGetDTO>();
-            var generos = await context.Generos.Include("Peliculas").ToListAsync();
 
-            foreach (Genero genero in generos)
+            try
             {
-                generosDTO.Add(genero.AsGetDTO());
+                return Ok(await repository.GetGeneros());
             }
-
-            return Ok(generosDTO);
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving data from the database");
+            }
 
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<GeneroGetDTO>> GetGenero(int id)
         {
-            //var genero = await context.Generos.Include("Peliculas").Where(p => p.Id == id).FirstOrDefaultAsync(c => c.Id == id);
-            var genero = await context.Generos.Include("Peliculas").FirstOrDefaultAsync(c => c.Id == id);
-
-            if (genero == null)
+            try
             {
-                return NotFound();
+                var result = await repository.GetGenero(id);
+                if (result == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(result);
             }
-
-            return Ok(genero.AsGetDTO());
-
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving data from the database");
+            }
         }
 
         [HttpPost]
         public async Task<ActionResult> PostGenero(GeneroPostDTO generoDTO)
         {
-            List<Pelicula> peliculas = new List<Pelicula>();
-
-            foreach (int id in generoDTO.PeliculasId)
+            try
             {
-                var pelicula = await context.Peliculas.FirstOrDefaultAsync(p => p.Id == id);
-                peliculas.Add(pelicula);
+                if (generoDTO == null)
+                {
+                    return BadRequest();
+                }
+
+                var createdGenero = await repository.PostGenero(generoDTO);
+
+                return CreatedAtAction(nameof(PostGenero), createdGenero.AsGetDTO());
             }
-
-            Genero genero = new Genero()
+            catch (Exception)
             {
-                Imagen = generoDTO.Imagen,
-                Nombre = generoDTO.Nombre,
-                Peliculas = peliculas
-            };
-
-            context.Add(genero);
-            await context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(Genero), generoDTO);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error creating new genero record");
+            }
 
         }
 
         [HttpPut("{id}")]
         public async Task<ActionResult> Put(int id, GeneroPostDTO generoDTO)
         {
-            //var genero = await context.Personajes.Include("Peliculas").Where(p => p.Id == id).FirstOrDefaultAsync(p => p.Id == id);
-            var genero = await context.Generos.Include("Peliculas").FirstOrDefaultAsync(p => p.Id == id);
-
-            if (genero == null)
+            try
             {
-                return NotFound();
+                var generoToUpdate = await repository.GetGenero(id);
+
+                if (generoToUpdate == null)
+                {
+                    return BadRequest();
+                }
+
+                return Ok(await repository.Put(id, generoDTO));
             }
-
-            List<Pelicula> peliculas = new List<Pelicula>();
-
-            foreach (int peliculaId in generoDTO.PeliculasId)
+            catch (Exception)
             {
-                var pelicula = await context.Peliculas.FirstOrDefaultAsync(p => p.Id == peliculaId);
-                peliculas.Add(pelicula);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error updating genero record");
             }
-
-            genero.Imagen = generoDTO.Imagen;
-            genero.Nombre = generoDTO.Nombre;
-            genero.Peliculas = peliculas;
-
-            context.Update(genero);
-            await context.SaveChangesAsync();
-
-            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var genero = await context.Generos.Include("Peliculas").FirstOrDefaultAsync(p => p.Id == id);
-
-            if (genero == null)
+            try
             {
-                return NotFound();
+                var generoToDelete = await repository.GetGenero(id);
+
+                if (generoToDelete == null)
+                {
+                    return BadRequest();
+                }
+
+                await repository.Delete(id);
+                return Ok("Genero with id = " + id + " deleted");
             }
-
-            context.Remove(genero);
-            await context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error deleting genero record");
+            }
         }
 
     }

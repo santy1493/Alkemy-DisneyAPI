@@ -40,6 +40,7 @@ namespace DisneyAPI
 
             services.AddScoped<IPersonajeRepository, PersonajeRepository>();
             services.AddScoped<IPeliculaRepository, PeliculaRepository>();
+            services.AddScoped<IGeneroRepository, GeneroRepository>();
 
             services.AddAuthentication(o => 
             {
