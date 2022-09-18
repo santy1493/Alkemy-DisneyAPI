@@ -12,6 +12,10 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System;
+using MimeKit;
+using MimeKit.Text;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 
 namespace DisneyAPI.Controllers
 {
@@ -54,11 +58,13 @@ namespace DisneyAPI.Controllers
                 if (isCreated.Succeeded)
                 {
                     var jwtToken = GenerateJwtToken(newUser);
+                    SendEmail(user.UserName, user.Email);
 
                     return Ok(new RegistrationResponse()
                     {
                         Success = true,
-                        Token = jwtToken
+                        Token = jwtToken,
+                            
                     });
                 }
                 else
@@ -158,6 +164,21 @@ namespace DisneyAPI.Controllers
             var jwtToken = jwtTokenHandler.WriteToken(token);
 
             return jwtToken;
+        }
+
+        private static void SendEmail(string username, string emailAccount)
+        {
+            var email = new MimeMessage();
+            email.From.Add(MailboxAddress.Parse("name52@ethereal.email"));
+            email.To.Add(MailboxAddress.Parse(emailAccount));
+            email.Subject = "Disney Api Registration";
+            email.Body = new TextPart(TextFormat.Html) { Text = "<h2>Hello " + username + ", you are registered successfully</h2>" };
+
+            using var smtp = new SmtpClient();
+            smtp.Connect("smtp.ethereal.email", 587, SecureSocketOptions.StartTls);
+            smtp.Authenticate("name52@ethereal.email", "62JKDQvPGSvDkcZ8d8");
+            smtp.Send(email);
+            smtp.Dispose();
         }
     }
 }

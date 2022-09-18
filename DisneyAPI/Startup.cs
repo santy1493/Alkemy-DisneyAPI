@@ -1,5 +1,6 @@
 using DisneyAPI.Configuration;
 using DisneyAPI.Data;
+using DisneyAPI.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -36,6 +37,9 @@ namespace DisneyAPI
             services.Configure<JwtConfig>(Configuration.GetSection("JwtConfig"));
 
             services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(Configuration.GetConnectionString("Default")));
+
+            services.AddScoped<IPersonajeRepository, PersonajeRepository>();
+            services.AddScoped<IPeliculaRepository, PeliculaRepository>();
 
             services.AddAuthentication(o => 
             {
