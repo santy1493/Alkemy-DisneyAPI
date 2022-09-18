@@ -13,7 +13,7 @@ namespace DisneyAPI.Controllers
 {
     [Route("api/movies")]
     [ApiController]
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class PeliculasController : ControllerBase
     {
         private readonly ApplicationDbContext context;
@@ -24,9 +24,9 @@ namespace DisneyAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<PeliculaGetDTO>>> GetPeliculas([FromQuery] string name, [FromQuery] int genre, [FromQuery] string order)
+        public async Task<ActionResult<List<PeliculaGetAllDTO>>> GetPeliculas([FromQuery] string name, [FromQuery] int genre, [FromQuery] string order)
         {
-            List<PeliculaGetDTO> peliculasDTO = new List<PeliculaGetDTO>();
+            List<PeliculaGetAllDTO> peliculasDTO = new List<PeliculaGetAllDTO>();
 
             var peliculas = await context.Peliculas.Include("Personajes").ToListAsync();
 
@@ -57,7 +57,7 @@ namespace DisneyAPI.Controllers
 
             foreach (Pelicula pelicula in peliculas)
             {
-                peliculasDTO.Add(pelicula.AsGetDTO());
+                peliculasDTO.Add(pelicula.AsGetAllDTO());
             }
 
             return Ok(peliculasDTO);

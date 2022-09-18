@@ -1,5 +1,7 @@
 ﻿using DisneyAPI.Data;
 using DisneyAPI.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +13,7 @@ namespace DisneyAPI.Controllers
 {
     [Route("api/characters")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class PersonajesController : ControllerBase
     {
         private readonly ApplicationDbContext context;
@@ -21,9 +24,9 @@ namespace DisneyAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<PersonajeGetDTO>>> GetPersonajes([FromQuery] string name, [FromQuery] int age, [FromQuery] int movie)
+        public async Task<ActionResult<List<PersonajeGetAllDTO>>> GetPersonajes([FromQuery] string name, [FromQuery] int age, [FromQuery] int movie)
         {
-            List<PersonajeGetDTO> personajesDTO = new List<PersonajeGetDTO>();
+            List<PersonajeGetAllDTO> personajesDTO = new List<PersonajeGetAllDTO>();
             var personajes = await context.Personajes.Include("Peliculas").ToListAsync();
 
             if(name != null)
@@ -41,7 +44,7 @@ namespace DisneyAPI.Controllers
 
             foreach (Personaje personaje in personajes)
             {
-                personajesDTO.Add(personaje.AsGetDTO());
+                personajesDTO.Add(personaje.AsGetAllDTO());
             }
 
             return Ok(personajesDTO);

@@ -76,6 +76,18 @@ namespace DisneyAPI
             return personajeDTO;
         }
 
+        public static PersonajeGetAllDTO AsGetAllDTO(this Personaje personaje)
+        {
+            PersonajeGetAllDTO personajeDTO = new PersonajeGetAllDTO()
+            {
+                Id = personaje.Id,
+                Imagen = personaje.Imagen,
+                Nombre = personaje.Nombre,
+            };
+
+            return personajeDTO;
+        }
+
         public static PeliculaGetDTO AsGetDTO(this Pelicula pelicula)
         {
             PeliculaGetDTO peliculaDTO = new PeliculaGetDTO()
@@ -90,7 +102,20 @@ namespace DisneyAPI
 
             return peliculaDTO;
         }
-        
+
+        public static PeliculaGetAllDTO AsGetAllDTO(this Pelicula pelicula)
+        {
+            PeliculaGetAllDTO peliculaDTO = new PeliculaGetAllDTO()
+            {
+                Id = pelicula.Id,
+                Imagen = pelicula.Imagen,
+                Titulo = pelicula.Titulo,
+                FechaCreacion = pelicula.FechaCreacion,
+            };
+
+            return peliculaDTO;
+        }
+
         public static GeneroGetDTO AsGetDTO(this Genero genero)
         {
             GeneroGetDTO generoDTO = new GeneroGetDTO()
